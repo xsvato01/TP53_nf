@@ -1,0 +1,8 @@
+name: bwa
+channels:
+  - bioconda
+  - defaults
+dependencies:
+  - bwa=0.7.17=h5bf99c6_8
+  - sambamba=0.5.9=1
+  - samtools=1.6=hb116620_7
