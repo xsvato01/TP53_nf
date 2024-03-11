@@ -20,6 +20,7 @@ RUN wget --quiet https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86
 ENV PATH=$CONDA_DIR/bin:$PATH
 # Install the conda environments
 COPY * /
+RUN ls -al
 RUN sh installEnvs.sh
 
 RUN source ~/opt/conda/etc/profile.d/conda.sh
