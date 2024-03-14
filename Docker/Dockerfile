@@ -25,3 +25,4 @@ RUN sh installEnvs.sh
 
 #RUN source ~/opt/conda/etc/profile.d/conda.sh
 USER 1000
+RUN source activate
