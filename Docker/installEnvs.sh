@@ -8,4 +8,3 @@ for file in *.yml; do
         mamba env create -f "$file"
     fi
 done
-rm *.yml
