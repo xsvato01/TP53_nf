@@ -18,5 +18,5 @@ COPY * /
 RUN sh installEnvs.sh
 SHELL ["/bin/bash", "--login", "-c"]
 RUN source /opt/conda/etc/profile.d/conda.sh
-USER 1000
+#USER 1000
 #RUN source activate
