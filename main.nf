@@ -64,7 +64,7 @@ process TRIMMING_2 {
 }
 
 process ALIGN {
-	tag "first align on $sample.name using $task.cpus CPUs and $task.memory memory"
+	tag "ALIGN on $sample.name using $task.cpus CPUs and $task.memory memory"
 	publishDir "${params.outDirectory}/${sample.run}/${sample.name}/mapped/", mode:'copy'
 	label "m_cpu"
 	label "l_mem"
@@ -150,9 +150,6 @@ process VARDICT {
 	"""
 	echo VARDICT $sample.name
 	source activate vardict
-	export PATH="/opt/conda/envs/samtools/bin/samtools:$PATH"
-	
-	sleep infinity
 	vardict -G ${params.ref}.fa -f 0.0005 -b ${bam} \
 		-c 1 -S 2 -E 3 -r 8 -Q 1 -q 25 -P 2 -m 8 \
 		${params.varbed} | Rscript --vanilla ${params.teststrandbias} | perl ${params.var2vcf_valid} -f 0.000005 -d 50 -c 5 -p 2 -q 25 -Q 1 -v 8 -m 8 -N vardict - > ${sample.name}.vardict.vcf
