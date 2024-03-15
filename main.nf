@@ -2,7 +2,7 @@ process COLLECT_BASECALLED {
 	tag "COLLECT_BASECALLED on $sample.name using $task.cpus CPUs and $task.memory memory"
 	label "small_process"
 	label "s_cpu"
-	label "s_mem"
+	label "xs_mem"
 
 	input:
 	val(sample)
@@ -20,7 +20,7 @@ process COLLECT_BASECALLED {
 process TRIMMING_1 {
 	tag "trimming 1 on $sample.name using $task.cpus CPUs and $task.memory memory"
 	label "s_cpu"
-	label "s_mem"
+	label "xs_mem"
 	//publishDir  "${params.outDirectory}/${sample.run}/${sample.name}/trimmed/", mode:'copy'
 	
 	input:
@@ -44,7 +44,7 @@ process TRIMMING_2 {
 	tag "trimming 2 on $sample.name using $task.cpus CPUs and $task.memory memory"
 	//publishDir  "${params.outDirectory}/${sample.run}/${sample.name}/trimmed/", mode:'copy'
 	label "s_cpu"
-	label "s_mem"
+	label "xs_mem"
 	
 	input:
 	tuple val(sample), path(reads)
@@ -138,7 +138,6 @@ process VARDICT {
 	// publishDir "${params.outDirectory}/${sample.run}/${sample.name}/vcf/", mode:'copy'
     label "s_cpu"
 	label "m_mem"
-	debug true
 	
 	input:
 	tuple val(sample), path(bam), path(bai)
@@ -178,6 +177,7 @@ process NORMALIZE_VARIANTS {
 	"""
 	echo NORMALIZE_VARIANTS $sample.name
 	source activate bcftools
+	sleep infinity
 	bcftools norm -f ${params.ref}.fa $varscan_snv -o ${sample.name}.varscan.snv.norm.vcf
 	bcftools norm -f ${params.ref}.fa $varscan_indel -o ${sample.name}.varscan.indel.norm.vcf
 	bcftools norm -f ${params.ref}.fa $vardict -o ${sample.name}.vardict.norm.vcf	
