@@ -15,12 +15,14 @@ print(args[2])
 #
 annot_files = list.files(args[1], pattern = "*normVEP.txt")
 
+print(annot_files)
 # filter dataset and add information
 annot_dt_list = lapply(annot_files, function(file){
 
   # read tabel
-  annot_dt = fread(paste0(args[1], "/", file, sep = ""), header = T)
+  annot_dt = fread(file, header = T)
   annot_dt = cbind(Sample_name = gsub(".norm.merged.annot.normVEP.txt", "", file), annot_dt)
+
 
   # variant detected by how many callers?
   annot_dt[set == "vardict-varscan_SNV", VC_DETECTION_COUNT := "2"]
@@ -38,7 +40,6 @@ annot_dt_list = lapply(annot_files, function(file){
 
     # create big data table from list for all samples
     tmp_dt <- rbindlist(annot_dt_list)
-
     # remove columns redundant
     rem_col_vector = c("vardict:FREQ","vardict:GQ","vardict:GT",
                       "vardict:PVAL","vardict:RBQ","vardict:RD","vardict:RDF","vardict:RDR",
@@ -82,7 +83,6 @@ annot_dt_list = lapply(annot_files, function(file){
 #                                                    gsub("\\.",",",as.numeric(as.character(tmp_dt2$vardict.AF)) * 100), "%")]
 #    tmp_dt2[varscan.FREQ != "NANA", mutation_description := paste0(gsub("NM_000546.5:","", tmp_dt2$VEP_HGVSc), " ", gsub("NP_000537.3:", "", tmp_dt2$VEP_HGVSp), " ",
 #                                                    gsub("\\.", ",", tmp_dt2$varscan.FREQ))]
-
     for(p in 1:length(tmp_dt2$Sample_name)){
 
       if(tmp_dt2$varscan.FREQ[p] == "NANA"){

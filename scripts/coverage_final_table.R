@@ -28,10 +28,10 @@ for(i in list.files(path, pattern = "*PBcoverage.txt")){
   }
   
   exon_sample_stat <- rbindlist(exon_stat)
-  write.table(exon_sample_stat, file = paste0(path,"/",file_name_stat,".perexon_stat.txt"), quote = F, row.names = F, sep = "\t")
+  write.table(exon_sample_stat, file = paste0(file_name_stat,".perexon_stat.txt"), quote = F, row.names = F, sep = "\t")
   
 }
 
 final_df<-rbindlist(final_list)
-write.table(final_df, file=paste0(path,"/",args[2], "_tp53_gene_coverage.txt"),
+write.table(final_df, file=paste0(args[2], "_tp53_gene_coverage.txt"),
             sep="\t", quote = F, row.names = F)

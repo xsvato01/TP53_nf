@@ -7,7 +7,6 @@ RUN apt-get update; export DEBIAN_FRONTEND=noninteractive; apt-get -y --no-insta
    unzip \
    build-essential \
    gcc-multilib \
-   openssl \
    multiqc \
    netcat-openbsd && \
    export DEBIAN_FRONTEND=noninteractive; apt-get -y install openssh-client openssh-sftp-server openssh-server
