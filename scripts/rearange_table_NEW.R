@@ -12,6 +12,9 @@ print(args[1])
 # RUN ID
 print(args[2])
 
+#args = c()
+#args[1] = '.'
+#args[2] = 'testRun'
 #
 annot_files = list.files(args[1], pattern = "*normVEP.txt")
 
@@ -69,9 +72,10 @@ annot_dt_list = lapply(annot_files, function(file){
     tmp_dt2[, varscan.FREQ := gsub("F", "", tmp_dt2$varscan.FREQ)]
 
     # count variant mean across samples
-    tmp_dt2[varscan.FREQ != "NANA" & varscan.FREQ != ".",final_AF := varscan.FREQ]
+    tmp_dt2[varscan.FREQ != "NANA" & varscan.FREQ != "NoneNone" & varscan.FREQ != ".",final_AF := varscan.FREQ] 
     tmp_dt2[is.na(final_AF), final_AF := as.numeric(as.character(vardict.AF))*100]
-    tmp_dt2[,final_AF := as.numeric(gsub("%.*", "", final_AF))]
+    #NoneNone, 0.11%.11% apod
+    tmp_dt2[,final_AF := as.numeric(gsub("%.*", "", final_AF))] #tady neco spatne
     tmp_dt2[,variant_mean_perc := round(mean(final_AF), digits = 3),by = VEP_HGVSc]
     tmp_dt2[,variant_median := median(final_AF),by = VEP_HGVSc]
     
@@ -123,6 +127,8 @@ annot_dt_list = lapply(annot_files, function(file){
 
     ######################## evaluate background variants ######################################################
     
+    tmp_dt2[is.na(tmp_dt2$final_AF)]
+    #nektere final_AF jsou NULL
     tmp_dt2[,outlier_p_value := .(grubbs.test(final_AF)$p.value), by = VEP_HGVSc]
     tmp_dt2[outlier_p_value < 0.05, max_value := .(max(final_AF)), by = VEP_HGVSc]
     
@@ -178,7 +184,7 @@ for(sample in unique(final_dt$Sample_name)){
   final_dt2 = final_dt2[,(remove_columns):=NULL]
   # save file
   print(paste0(sample, ".sample.merged.anot.txt"))
-  print(head(final_dt2))
+  #print(head(final_dt2))
   write.table(final_dt2, file=paste0(sample, ".sample.merged.anot.txt"), sep="\t", quote = F, row.names = F)
 }
 

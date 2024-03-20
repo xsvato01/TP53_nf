@@ -381,9 +381,10 @@ process CREATE_TXT {
 
 process CREATE_FINAL_TABLE {
 	tag "CREATE_FINAL_TABLE on $run using $task.cpus CPUs and $task.memory memory"
-	publishDir "${params.outDirectory}/${run}/annotate/", mode:'copy', pattern: "*sample.merged.anot.txt"
-    publishDir "${params.outDirectory}/${run}/annotate/", mode:'copy', pattern: "*allsamples.merged.anot.txt"    label "s_cpu"
+    publishDir "${params.outDirectory}/${run}/annotate/", mode:'copy'
 	label "s_mem"
+    label "s_cpu"
+	debug true
 	
 	input:
 	tuple val(run), path(all_annotated_normed)
@@ -491,7 +492,6 @@ process MULTIQC {
 process ZIPFILES {
 	tag "ZIPFILES $task.cpus CPUs and $task.memory memory"
 	publishDir "${params.outDirectory}/zip/", mode:'copy'
-
     label "s_cpu"
 	label "m_mem"
 	
@@ -499,11 +499,12 @@ process ZIPFILES {
 	path files
 
 	output:
-	path "NGS.zip"
+	path "NGS.tar.gz"
 
 	script:
 	"""
-	tar -cvf NGS.zip $files
+	echo ZIPFILES
+	tar -chf NGS.tar.gz --exclude='.command*' .
 	"""
 }
 
@@ -518,6 +519,6 @@ process FILESENDER {
 	script:
 	"""
 	python3 $params.filesender -a 53ee39671b0b915c2f393a75966f0b74683eb0b3b02b6385da604a946689a86d \
-	-u 8a7faace1e24c4189f4e3f51d7a8713555a18540@einfra.cesnet.cz -r 450402@mail.muni.cz -m "Posilam data" $fileToSend
+	-u 8a7faace1e24c4189f4e3f51d7a8713555a18540@einfra.cesnet.cz -r 450402@mail.muni.cz $fileToSend
 	"""
 }

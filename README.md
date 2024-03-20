@@ -4,11 +4,11 @@
 
 append to `~/.nextflow/scm`:
 `providers {
-  github {
-    user = 'UCO'
-    password = 'YOUPERSONALTOKEN'
-  }
-}`
+    github {
+        user = 'UCO'
+        password = 'YOUPERSONALTOKEN'
+        }
+    }`
 
 ## If your docker image is private and hosted on Gitlab Muni:
 
@@ -16,7 +16,7 @@ Run docker login registry.gitlab.ics.muni.cz:443 -u <username> -p <token> on an 
 This secret has to be added to nextflow.config:
 `process {
     pod = [[imagePullSecret:'gitlab-svaton-secret'], ...]
-}`
+    }`
 
 ## Samplesheet
 
