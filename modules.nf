@@ -34,7 +34,6 @@ process TRIMMING_1 {
 	tag "trimming 1 on $name using $task.cpus CPUs and $task.memory memory"
 	label "s_cpu"
 	label "xs_mem"
-	//publishDir  "${params.outDirectory}/${sample.run}/${name}/trimmed/", mode:'copy'
 	
 	input:
 	tuple val(name), val(sample), path(reads)
@@ -55,7 +54,6 @@ process TRIMMING_1 {
 
 process TRIMMING_2 {
 	tag "trimming 2 on $name using $task.cpus CPUs and $task.memory memory"
-	//publishDir  "${params.outDirectory}/${sample.run}/${name}/trimmed/", mode:'copy'
 	label "s_cpu"
 	label "xs_mem"
 	
@@ -78,7 +76,6 @@ process TRIMMING_2 {
 
 process ALIGN {
 	tag "ALIGN on $name using $task.cpus CPUs and $task.memory memory"
-	// publishDir "${params.outDirectory}/${sample.run}/${name}/mapped/", mode:'copy'
 	label "m_cpu"
 	label "l_mem"
 	
@@ -86,7 +83,7 @@ process ALIGN {
 	tuple val(name), val(sample), path(reads)
 
 	output:
-    tuple val(name), val(sample), path("${name}.bam")
+	tuple val(name), val(sample), path("${name}.bam")
 
 	script:
 	rg = "\"@RG\\tID:${name}\\tSM:${name}\\tLB:${name}\\tPL:ILLUMINA\""
@@ -100,7 +97,6 @@ process ALIGN {
 
 process FILTER_HUMAN {
 	tag "FILTER_HUMAN on $name using $task.cpus CPUs and $task.memory memory"
-	// publishDir "${params.outDirectory}/${sample.run}/${name}/mapped/", mode:'copy'
 	label "m_mem"
 	label "s_cpu"
 
@@ -121,7 +117,6 @@ process FILTER_HUMAN {
 
 process ALIGN_ANIMALS {
 	tag "ALIGN_ANIMALS on $name to $reference using $task.cpus CPUs and $task.memory memory"
-	// publishDir "${params.outDirectory}/${sample.run}/${name}/mapped/", mode:'copy'
 	label "m_cpu"
 	memory "${reference == 'zebrafish' ? '96 GB' : '48 GB'}"
 	
@@ -129,7 +124,7 @@ process ALIGN_ANIMALS {
 	tuple val(name), val(sample), path(reads), val(reference)
 
 	output:
-    tuple val("${name}.${reference}"), val(sample), path("${name}.${reference}.bam")
+	tuple val("${name}.${reference}"), val(sample), path("${name}.${reference}.bam")
 
 	script:
 	rg = "\"@RG\\tID:${name}\\tSM:${name}\\tLB:${name}\\tPL:ILLUMINA\""
@@ -168,7 +163,6 @@ process SORT_INDEX {
 
 process PILE_UP {
 	tag "PILE_UP on $name using $task.cpus CPUs and $task.memory memory"
-	//publishDir "${params.outDirectory}/${sample.run}/${name}/vcf/", pattern: '*.md.ba*', mode:'copy'
 	label "s_cpu"
 	label "m_mem"
 	
@@ -188,8 +182,7 @@ process PILE_UP {
 
 process VARSCAN {
 	tag "VARSCAN on $name using $task.cpus CPUs and $task.memory memory"
-	//publishDir "${params.outDirectory}/${sample.run}/${name}/vcf/", mode:'copy'
-    label "s_cpu"
+	label "s_cpu"
 	label "m_mem"
 	
 	input:
@@ -215,8 +208,7 @@ process VARSCAN {
 
 process VARDICT {
 	tag "VARDICT on $name using $task.cpus CPUs and $task.memory memory"
-	// publishDir "${params.outDirectory}/${sample.run}/${name}/vcf/", mode:'copy'
-    label "s_cpu"
+	label "s_cpu"
 	label "m_mem"
 	
 	input:
@@ -239,9 +231,8 @@ process VARDICT {
 
 process NORMALIZE_VARIANTS {
 	tag "Normalizing variants on $name using $task.cpus CPUs and $task.memory memory"
-	// publishDir "${params.outDirectory}/${sample.run}/${name}/vcf/", mode:'copy'
 	container "staphb/bcftools:1.10.2"
-    label "s_cpu"
+	label "s_cpu"
 	label "s_mem"
 	
 	input:
@@ -266,8 +257,7 @@ process NORMALIZE_VARIANTS {
 
 process MERGE_VARIANTS {
 	tag "Merging variants on $name using $task.cpus CPUs and $task.memory memory"
-	//publishDir "${params.outDirectory}/${sample.run}/${name}/vcf/", mode:'copy'
-    label "s_cpu"
+	label "s_cpu"
 	label "s_mem"
 	
 	input:
@@ -294,10 +284,9 @@ process MERGE_VARIANTS {
 
 process NORMALIZE_MERGED_VARIANTS {
 	tag "Normalizing merged variants on $name using $task.cpus CPUs and $task.memory memory"
-	//publishDir "${params.outDirectory}/${sample.run}/${name}/vcf/", mode:'copy'
 	container "staphb/bcftools:1.10.2"
 
-    label "s_cpu"
+	label "s_cpu"
 	label "s_mem"
 	
 	input:
@@ -316,8 +305,7 @@ process NORMALIZE_MERGED_VARIANTS {
 
 process ANNOTATE {
 	tag "Annotating variants on $name using $task.cpus CPUs and $task.memory memory"
-	//publishDir "${params.outDirectory}/${sample.run}/${name}/annotate/", mode:'copy'
-    label "s_cpu"
+	label "s_cpu"
 	label "m_mem"
 	
 	input:
@@ -339,8 +327,7 @@ process ANNOTATE {
 
 process NORMALIZE_VEP {
 	tag "NORMALIZE_VEP on $name using $task.cpus CPUs and $task.memory memory"
-	//publishDir "${params.outDirectory}/${sample.run}/${name}/annotate/", mode:'copy'
-    label "s_cpu"
+	label "s_cpu"
 	label "s_mem"
 	
 	input:
@@ -360,8 +347,7 @@ process NORMALIZE_VEP {
 
 process CREATE_TXT {
 	tag "CREATE_TXT on $name using $task.cpus CPUs and $task.memory memory"
-	// publishDir "${params.outDirectory}/${sample.run}/annotate/", mode:'copy'
-    label "s_cpu"
+	label "s_cpu"
 	label "s_mem"
 	
 	input:
@@ -381,17 +367,17 @@ process CREATE_TXT {
 
 process CREATE_FINAL_TABLE {
 	tag "CREATE_FINAL_TABLE on $run using $task.cpus CPUs and $task.memory memory"
-    publishDir "${params.outDirectory}/${run}/annotate/", mode:'copy'
+	publishDir "${params.outDirectory}/${run}/annotate/", mode:'copy'
 	label "s_mem"
-    label "s_cpu"
+	label "s_cpu"
 	debug true
 	
 	input:
 	tuple val(run), path(all_annotated_normed)
 
-    output:
-    path "*sample.merged.anot.txt"
-    path "*allsamples.merged.anot.txt"
+	output:
+	path "*sample.merged.anot.txt"
+	path "*allsamples.merged.anot.txt"
 	
 	script:
 	"""
@@ -404,16 +390,16 @@ process CREATE_FINAL_TABLE {
 process CREATE_MERGED_TABLE {
 	tag "CREATE_MERGED_TABLE using $task.cpus CPUs and $task.memory memory"
 	publishDir "${params.outDirectory}/${run}/annotate/", mode:'copy', pattern: "*sample.merged.anot.txt"
-    publishDir "${params.outDirectory}/${run}/annotate/", mode:'copy', pattern: "*allsamples.merged.anot.txt"
-    label "s_cpu"
+	publishDir "${params.outDirectory}/${run}/annotate/", mode:'copy', pattern: "*allsamples.merged.anot.txt"
+	label "s_cpu"
 	label "s_mem"
 	
 	input:
 	tuple val(run), path(all_annotated_normed)
 
-    output:
-    path "*sample.merged.anot.txt"
-    path "*allsamples.merged.anot.txt"
+	output:
+	path "*sample.merged.anot.txt"
+	path "*allsamples.merged.anot.txt"
 
 	
 	script:
@@ -428,7 +414,7 @@ process CREATE_MERGED_TABLE {
 process COVERAGE {
 	tag "Creating coverage on $name using $task.cpus CPUs and $task.memory memory"
 	publishDir "${params.outDirectory}/${sample.run}/coverage/", mode:'copy'
-    label "s_cpu"
+	label "s_cpu"
 	label "l_mem"
 	
 	input:
@@ -448,7 +434,7 @@ process COVERAGE {
 process COVERAGE_STATS {
 	tag "Creating coverage stats on $name using $task.cpus CPUs and $task.memory memory"
 	publishDir "${params.outDirectory}/${sample.run}/coverage/", mode:'copy'
-    label "s_cpu"
+	label "s_cpu"
 	label "l_mem"
 	
 	input:
@@ -469,7 +455,7 @@ process COVERAGE_STATS {
 process MULTIQC {
 	tag "first QC on $name using $task.cpus CPUs and $task.memory memory"
 	publishDir "${params.outDirectory}/${sample.run}/${name}/coverage/", mode:'copy'
-    label "s_cpu"
+	label "s_cpu"
 	label "m_mem"
 	
 	input:
@@ -482,7 +468,7 @@ process MULTIQC {
 	"""
 	samtools flagstat $bam > ${name}.flagstat
 	samtools stats $bam > ${name}.samstats
-    picard BedToIntervalList -I ${params.covbedpicard} -O ${name}.interval_list -SD ${params.ref}.dict
+	picard BedToIntervalList -I ${params.covbedpicard} -O ${name}.interval_list -SD ${params.ref}.dict
 	picard CollectHsMetrics -I $bam -BAIT_INTERVALS ${name}.interval_list -TARGET_INTERVALS ${name}.interval_list -R ${params.ref}.fa -O ${name}.aln_metrics
 	multiqc . -n report.html
 	"""
@@ -492,7 +478,7 @@ process MULTIQC {
 process ZIPFILES {
 	tag "ZIPFILES $task.cpus CPUs and $task.memory memory"
 	publishDir "${params.outDirectory}/zip/", mode:'copy'
-    label "s_cpu"
+	label "s_cpu"
 	label "m_mem"
 	
 	input:
@@ -510,7 +496,7 @@ process ZIPFILES {
 
 process FILESENDER {
 	tag "FILESENDER $task.cpus CPUs and $task.memory memory"
-    label "s_cpu"
+	label "s_cpu"
 	label "m_mem"
 	
 	input:
