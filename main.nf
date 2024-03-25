@@ -13,7 +13,7 @@ trimmed1	= TRIMMING_1(rawfastq)
 trimmed2	= TRIMMING_2(trimmed1)	
 aligned	= ALIGN(trimmed2)
 sortedbam	= SORT_INDEX(aligned)
-pileup		= PILE_UP(sortedbam)
+(pileup, _)		= PILE_UP(sortedbam)
 varscanned	= VARSCAN(pileup)
 vardicted	= VARDICT(sortedbam)
 normalized	= NORMALIZE_VARIANTS(varscanned,vardicted)
@@ -26,20 +26,10 @@ runName_samplePath = txt.map({return [it[1].run, it[2]]})
 CREATE_FINAL_TABLE(runName_samplePath.groupTuple())
 
 covered		= COVERAGE(sortedbam)
-COVERAGE_STATS(covered)		
+runName_covPath = covered.map({return [it[1].run, it[2]]})
 
-subworkflow_pato(trimmed2, aligned )
+runName_covPath.groupTuple().view()
+COVERAGE_STATS(runName_covPath.groupTuple())		
 
-// animals = Channel.of( 'mouse', 'zebrafish')
-// fastqAnimals = trimmed2.filter{it[1].pato_mix}.combine(animals)
-// // fastqAnimals.view{"$it is fastqAnimals"}
-// alignedAnimals = ALIGN_ANIMALS(fastqAnimals)
-// patoHuman = aligned.filter{it[1].pato_mix}
-// filteredHuman = FILTER_HUMAN(patoHuman)
-// sortedToSendFiles = SORT_INDEX(filteredHuman.mix(alignedAnimals)).view{"$it is mix sortedToSendFiles"}
-
-// ZIPFILES(filesToZip)
-// sortedFilteredHuman = SORT_INDEX(filteredHuman)
-
-// MULTIQC(sortedbam)	
+subworkflow_pato(trimmed2, aligned )	
 }
