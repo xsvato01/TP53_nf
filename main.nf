@@ -3,7 +3,7 @@ VARSCAN; VARDICT; NORMALIZE_VARIANTS; MERGE_VARIANTS; NORMALIZE_MERGED_VARIANTS;
 NORMALIZE_VEP; CREATE_TXT; CREATE_FINAL_TABLE; COVERAGE; COVERAGE_STATS } from "${params.projectDirectory}/modules"
 
 
-include { subworkflow_pato } from "${params.projectDirectory}/subworkflow_pato"
+include { subworkflow_bryja } from "${params.projectDirectory}/subworkflow_bryja"
 
 workflow {
 runlist = channel.fromList(params.samples)
@@ -31,5 +31,5 @@ runName_covPath = covered.map({return [it[1].run, it[2]]})
 runName_covPath.groupTuple().view()
 COVERAGE_STATS(runName_covPath.groupTuple())		
 
-subworkflow_pato(trimmed2, aligned )	
+subworkflow_bryja(trimmed2, aligned )	
 }

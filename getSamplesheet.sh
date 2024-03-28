@@ -5,4 +5,4 @@ current_dir=$(pwd)
 
 # Convert the CSV file to JSON using a Python script
 python $current_dir/project/xsvato01/TP53_nf/scripts/CsvToJson.py $current_dir/samplesheet.csv $current_dir/samplesheet.json
-#rm samplesheet.csv
+rm samplesheet.csv
