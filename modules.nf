@@ -26,7 +26,7 @@ process COLLECT_BASECALLED {
 	script:
 	"""
 	echo COLLECT_BASECALLED $name
-	cp  /mnt/shared/MedGen/sequencing_results/primary_data/*${sample.run}/raw_fastq/${name}*R{1,2}* ./
+	cp  /mnt/share/710000-CEITEC/713000-cmm/713003-pospisilova/base/sequencing_results/primary_data/*${sample.run}/raw_fastq/${name}*R{1,2}* ./
 	"""
 } 
 
