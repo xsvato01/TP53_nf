@@ -13,5 +13,5 @@ workflow subworkflow_bryja {
     filteredHuman = FILTER_HUMAN(patoHuman)
     sortedToSendFiles = SORT_INDEX(filteredHuman.mix(alignedAnimals)).map({return [it[2], it[3]]})
     zippedFiles = ZIPFILES(sortedToSendFiles.collect())
-    // FILESENDER(zippedFiles)
+    FILESENDER(zippedFiles)
 }

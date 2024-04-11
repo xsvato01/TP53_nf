@@ -14,21 +14,22 @@ trimmed2	= TRIMMING_2(trimmed1)
 aligned	= ALIGN(trimmed2)
 sortedbam	= SORT_INDEX(aligned)
 (pileup, _)		= PILE_UP(sortedbam)
-varscanned	= VARSCAN(pileup)
+(varscannedSNV, varscannedINDEL)	= VARSCAN(pileup)
 vardicted	= VARDICT(sortedbam)
-normalized	= NORMALIZE_VARIANTS(varscanned,vardicted)
+
+mixVCFs = vardicted.join(varscannedSNV, by: [0,1]).join(varscannedINDEL, by: [0,1])
+normalized	= NORMALIZE_VARIANTS(mixVCFs)
 merged		= MERGE_VARIANTS(normalized)
 norm_merged	= NORMALIZE_MERGED_VARIANTS(merged)
 annotated	= ANNOTATE(norm_merged)
 annot_norm	= NORMALIZE_VEP(annotated)
 txt		= CREATE_TXT(annot_norm)
 runName_samplePath = txt.map({return [it[1].run, it[2]]})
+
 CREATE_FINAL_TABLE(runName_samplePath.groupTuple())
 
 covered		= COVERAGE(sortedbam)
 runName_covPath = covered.map({return [it[1].run, it[2]]})
-
-runName_covPath.groupTuple().view()
 COVERAGE_STATS(runName_covPath.groupTuple())		
 
 subworkflow_bryja(trimmed2, aligned )	

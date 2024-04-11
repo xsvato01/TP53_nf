@@ -115,7 +115,7 @@ process FILTER_HUMAN {
 	"""
 	echo FILTER_HUMAN $name
 	source activate bedtools
-	bedtools intersect -abam ${bam} -b $params.varbed > ${name}.human.bam
+	bedtools intersect -v -abam ${bam} -b $params.varbed > ${name}.human.bam
 	"""
 }
 
@@ -221,7 +221,7 @@ process VARDICT {
 	tuple val(name), val(sample), path(bam), path(bai)
 
 	output:
-	tuple val(name), val(sample), path ("${name}.vardict.vcf")
+	tuple val(name), val(sample), path("${name}.vardict.vcf")
 
 	script:
 	"""
@@ -242,14 +242,10 @@ process NORMALIZE_VARIANTS {
 	label "xxs_mem"
 	
 	input:
-	tuple val(name), val(sample), path (varscan_snv)
-	tuple val(name), val(sample), path (varscan_indel)
-	tuple val(name), val(sample), path (vardict)
+	tuple val(name), val(sample), path(vardict), path(varscan_snv), path(varscan_indel)
 
 	output:
-	tuple val(name), val(sample), path ("${name}.varscan.snv.norm.vcf")
-	tuple val(name), val(sample), path ("${name}.varscan.indel.norm.vcf")
-	tuple val(name), val(sample), path ("${name}.vardict.norm.vcf")
+	tuple val(name), val(sample), path("${name}.varscan.snv.norm.vcf"), path("${name}.varscan.indel.norm.vcf"), path("${name}.vardict.norm.vcf")
 	
 	script:
 	"""
@@ -267,12 +263,10 @@ process MERGE_VARIANTS {
 	label "s_mem"
 	
 	input:
-	tuple val(name), val(sample), path(varscan_snv_norm)
-	tuple val(name), val(sample), path(varscan_indel_norm)
-	tuple val(name), val(sample), path(vardict_norm)
+	tuple val(name), val(sample), path(varscan_snv_norm), path(varscan_indel_norm), path(vardict_norm)
 
 	output:
-	tuple val(name), val(sample), path ("${name}.allcallers.merged.vcf")
+	tuple val(name), val(sample), path("${name}.allcallers.merged.vcf")
 	
 	script:
 	"""
@@ -295,10 +289,10 @@ process NORMALIZE_MERGED_VARIANTS {
 	label "xxs_mem"
 	
 	input:
-	tuple val(name), val(sample), path (merged_vcf)
+	tuple val(name), val(sample), path(merged_vcf)
 
 	output:
-	tuple val(name), val(sample), path ("${name}.allmerged.norm.vcf")
+	tuple val(name), val(sample), path("${name}.allmerged.norm.vcf")
 	
 	script:
 	"""
@@ -317,7 +311,7 @@ process ANNOTATE {
 	tuple val(name), val(sample), path(merged_normed_vcf)
 
 	output:
-	tuple val(name), val(sample), path ("${name}.allmerged.norm.annot.vcf")
+	tuple val(name), val(sample), path("${name}.allmerged.norm.annot.vcf")
 	
 	script:
 	"""
@@ -352,6 +346,8 @@ process NORMALIZE_VEP {
 
 process CREATE_TXT {
 	tag "CREATE_TXT on $name using $task.cpus CPUs and $task.memory memory"
+	publishDir "${params.outDirectory}/${sample.run}/tmp/", mode:'copy'
+
     label "s_cpu"
 	label "xxs_mem"
 	
@@ -373,7 +369,7 @@ process CREATE_TXT {
 process CREATE_FINAL_TABLE {
 	tag "CREATE_FINAL_TABLE on $run using $task.cpus CPUs and $task.memory memory"
     publishDir "${params.outDirectory}/${run}/annotate/", mode:'copy'
-	label "s_mem"
+	label "m_mem"
     label "s_cpu"
 	
 	input:
@@ -423,6 +419,7 @@ process COVERAGE_STATS {
 	output:
     path "*.perexon_stat.txt"
     path "*_tp53_gene_coverage.txt"
+	path "*.allsamples.merged.coverage.txt"
 	
 	script:
 	"""
@@ -443,7 +440,7 @@ process MULTIQC {
 	tuple val(name), val(sample), path(bam)
 
 	output:
-	path "report.html"
+	path"report.html"
 
 	script:
 	"""
@@ -458,15 +455,15 @@ process MULTIQC {
 
 process ZIPFILES {
 	tag "ZIPFILES $task.cpus CPUs and $task.memory memory"
-	publishDir "${params.outDirectory}/zip/", mode:'copy'
+	// publishDir "${params.outDirectory}/zip/", mode:'copy'
     label "s_cpu"
 	label "m_mem"
 	
 	input:
-	path files
+	pathfiles
 
 	output:
-	path "NGS.tar.gz"
+	path"NGS.tar.gz"
 
 	script:
 	"""
@@ -481,11 +478,11 @@ process FILESENDER {
 	label "m_mem"
 	
 	input:
-	path fileToSend
+	pathfileToSend
 
 	script:
 	"""
 	python3 $params.filesender -a 53ee39671b0b915c2f393a75966f0b74683eb0b3b02b6385da604a946689a86d \
-	-u 8a7faace1e24c4189f4e3f51d7a8713555a18540@einfra.cesnet.cz -r 450402@mail.muni.cz $fileToSend
+	-u 8a7faace1e24c4189f4e3f51d7a8713555a18540@einfra.cesnet.cz -r hana.plesingerova@sci.muni.cz $fileToSend
 	"""
 }

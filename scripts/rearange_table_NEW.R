@@ -4,21 +4,16 @@ library(data.table)
 library(outliers)
 
 args = commandArgs(trailingOnly=TRUE)
+# setwd('/Volumes/share/share/710000-CEITEC/713000-cmm/713003-pospisilova/base/TP53/src/project/xsvato01/TP53_nf/scripts/')
+# args = c()
 
-# arguments temporary
-
-# Path to inputs
-print(args[1])
-# RUN ID
-print(args[2])
-
-#args = c()
-#args[1] = '.'
-#args[2] = 'testRun'
-#
+# args[1] = '/Volumes/share/share/710000-CEITEC/713000-cmm/713003-pospisilova/base/TP53/src/project/xsvato01/TP53_nf/scripts/'
+# args[2] = "TEST"
 annot_files = list.files(args[1], pattern = "*normVEP.txt")
 
-print(annot_files)
+
+print("filter dataset and add information")
+
 # filter dataset and add information
 annot_dt_list = lapply(annot_files, function(file){
 
@@ -64,6 +59,7 @@ annot_dt_list = lapply(annot_files, function(file){
     colnames(tmp_dt) = gsub(":", ".", colnames(tmp_dt))
     tmp_dt2 = tmp_dt
 
+    print("join varscan allelic FREQ")
     # join varscan allelic FREQ
     tmp_dt2[,varscan_INDEL.FREQ := gsub("^.$", "F", tmp_dt2$varscan_INDEL.FREQ)]
     tmp_dt2[,varscan.FREQ := tmp_dt2[, .(id=tmp_dt2[["id"]], varscan.FREQ=do.call(paste, c(.SD, sep=""))),
@@ -98,6 +94,7 @@ annot_dt_list = lapply(annot_files, function(file){
       }
     }
 
+    print("count strand bias")
     # count strand bias
     for(r in 1:length(tmp_dt2$Sample_name)){
       # all Varscan variants
@@ -126,7 +123,7 @@ annot_dt_list = lapply(annot_files, function(file){
     
 
     ######################## evaluate background variants ######################################################
-    
+    print("evaluate background variants")
     tmp_dt2[is.na(tmp_dt2$final_AF)]
     #nektere final_AF jsou NULL
     tmp_dt2[,outlier_p_value := .(grubbs.test(final_AF)$p.value), by = VEP_HGVSc]
@@ -147,7 +144,8 @@ annot_dt_list = lapply(annot_files, function(file){
     ##########################################################################################################
     
     tmp_dt2[,varscan.SBIAS := gsub("4.44", "NA", tmp_dt2$varscan.SBIAS)]
-    
+    print("reformat table")
+
     # reformat table
     tmp_dt2[,HIAF := gsub("\\.",",", tmp_dt2$HIAF)]
     tmp_dt2[,VEP_INTRON := gsub("/10", "", tmp_dt2$VEP_INTRON)]
