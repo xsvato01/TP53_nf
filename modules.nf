@@ -148,6 +148,8 @@ process SORT_INDEX {
 	tag "Sort index on $name using $task.cpus CPUs and $task.memory memory"
 	label "m_mem"
 	label "s_cpu"
+	publishDir "${params.outDirectory}/${sample.run}/mapped/", mode:'copy', pattern: "*.ba*"
+
 
 	input:
 	tuple val(name), val(sample), path(bam)
@@ -167,7 +169,7 @@ process SORT_INDEX {
 
 process PILE_UP {
 	tag "PILE_UP on $name using $task.cpus CPUs and $task.memory memory"
-	publishDir "${params.outDirectory}/${sample.run}/mapped/", mode:'copy', pattern: "*.ba*"
+	// publishDir "${params.outDirectory}/${sample.run}/mapped/", mode:'copy', pattern: "*.ba*"
 	label "s_cpu"
 	label "s_mem"
 	
@@ -237,6 +239,8 @@ process VARDICT {
 
 process NORMALIZE_VARIANTS {
 	tag "Normalizing variants on $name using $task.cpus CPUs and $task.memory memory"
+	// publishDir "${params.outDirectory}/${sample.run}/${name}/vcfs/", mode:'copy'
+
 	container "staphb/bcftools:1.10.2"
     label "s_cpu"
 	label "xxs_mem"
@@ -346,7 +350,7 @@ process NORMALIZE_VEP {
 
 process CREATE_TXT {
 	tag "CREATE_TXT on $name using $task.cpus CPUs and $task.memory memory"
-	publishDir "${params.outDirectory}/${sample.run}/tmp/", mode:'copy'
+	// publishDir "${params.outDirectory}/${sample.run}/tmp/", mode:'copy'
 
     label "s_cpu"
 	label "xxs_mem"
@@ -429,6 +433,26 @@ process COVERAGE_STATS {
 	"""
 }
 
+process PLOT_SAMPLE_BARPLOTS {
+	tag "PLOT_SAMPLE_BARPLOTS on $name using $task.cpus CPUs and $task.memory memory"
+	publishDir "${params.outDirectory}/${sample.run}/coverage/", mode:'copy'
+	container 'quay.io/biocontainers/mulled-v2-0da20d4734408989ea2a7cb514b3c0cc40b96198:cec6dc7924833053b0fc3b623f1f1f86cbc49b97-0'
+    label "s_cpu"
+	label "m_mem"
+	
+	input:
+	tuple val(name), val(sample), path(vcf)
+
+	output:
+	path "${name}_barPlot.pdf"
+
+	script:
+	"""
+	echo PLOT_SAMPLE_BARPLOTS.V1 $name
+	python $params.bar_plots $vcf --name ${name}_barPlot
+	"""
+}
+
 
 process MULTIQC {
 	tag "MULTIQC on $name using $task.cpus CPUs and $task.memory memory"
@@ -440,7 +464,7 @@ process MULTIQC {
 	tuple val(name), val(sample), path(bam)
 
 	output:
-	path"report.html"
+	path "report.html"
 
 	script:
 	"""
@@ -460,10 +484,10 @@ process ZIPFILES {
 	label "m_mem"
 	
 	input:
-	pathfiles
+	path files
 
 	output:
-	path"NGS.tar.gz"
+	path "NGS.tar.gz"
 
 	script:
 	"""
@@ -478,7 +502,7 @@ process FILESENDER {
 	label "m_mem"
 	
 	input:
-	pathfileToSend
+	path fileToSend
 
 	script:
 	"""
