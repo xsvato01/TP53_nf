@@ -1,35 +1,3 @@
-process REFORMAT_SAMPLE {
-	tag "Reformating $sample.name using $task.cpus CPUs $task.memory"
-	label "s_cpu"
-	label "xxs_mem"
-
-	input:
-	val sample
-
-	output:
-	tuple val(sample.name), val(sample)
-
-	""" """ //this is not an error
-}
-
-process COLLECT_BASECALLED {
-	tag "COLLECT_BASECALLED on $name using $task.cpus CPUs and $task.memory memory"
-	label "s_cpu"
-	label "xxs_mem"
-
-	input:
-	tuple val(name), val(sample)
-
-	output:
-	tuple val(name), val(sample), path("*.fastq.gz")
-
-	script:
-	"""
-	echo COLLECT_BASECALLED $name
-	cp  /mnt/share/710000-CEITEC/713000-cmm/713003-pospisilova/base/sequencing_results/primary_data/*${sample.run}/raw_fastq/${name}*R{1,2}* ./
-	"""
-} 
-
 process TRIMMING_1 {
 	tag "trimming 1 on $name using $task.cpus CPUs and $task.memory memory"
 	label "s_cpu"
@@ -288,6 +256,7 @@ process MERGE_VARIANTS {
 
 process NORMALIZE_MERGED_VARIANTS {
 	tag "Normalizing merged variants on $name using $task.cpus CPUs and $task.memory memory"
+	// publishDir "${params.outDirectory}/${sample.run}/NORMALIZE_MERGED_VARIANTS/", mode:'copy'
 	container "staphb/bcftools:1.10.2"
     label "s_cpu"
 	label "xxs_mem"
@@ -330,6 +299,8 @@ process ANNOTATE {
 
 process NORMALIZE_VEP {
 	tag "NORMALIZE_VEP on $name using $task.cpus CPUs and $task.memory memory"
+publishDir "${params.outDirectory}/${sample.run}/NORMALIZE_VEP/", mode:'copy'
+
     label "s_cpu"
 	label "xs_mem"
 	
@@ -433,6 +404,74 @@ process COVERAGE_STATS {
 	"""
 }
 
+process MERGE_BAMS {
+	tag "MERGE_BAMS on $run using $task.cpus CPUs and $task.memory memory"
+	publishDir "${params.outDirectory}/${run}/merged/", mode:'copy'
+	container "staphb/samtools:1.20"
+    label "m_cpu"
+	label "l_mem"
+	
+	input:
+	tuple val(run), path(all_bams), path(all_bais)
+
+	output:
+	tuple val(run), path("${run}.reheader.bam"), path("${run}.reheader.bam.bai")
+
+	
+	script:
+	"""
+	echo MERGE_BAMS $run
+	samtools merge -@ ${task.cpus} - $all_bams | samtools sort -@ ${task.cpus} - -o ${run}.sorted.bam
+
+	samtools view -H ${run}.sorted.bam | grep -v '^@RG' > new_header.txt
+	samtools reheader new_header.txt ${run}.sorted.bam > ${run}.reheader.bam
+	samtools index -@ ${task.cpus} ${run}.reheader.bam
+	"""
+}
+
+process BAM_READCOUNT {
+	tag "BAM_READCOUNT on $run using $task.cpus CPUs and $task.memory memory"
+	publishDir "${params.outDirectory}/${run}/merged/", mode:'copy'
+    container "apaul7/bam-readcount:test"
+	label "s_cpu"
+	label "xl_mem"
+	
+	input:
+	tuple val(run), path(merged_bam), path(bai)
+
+	output:
+	tuple val(run), path("readcounts.txt")
+
+	
+	script:
+	"""
+	echo BAM_READCOUNT $run
+	bam-readcount -w 1 -d 1000000000 -l $params.varbed -f ${params.ref}.fa $merged_bam  > readcounts.txt
+	"""
+}
+
+
+process PLOT_INTERACTIVE_BARPLOTS {
+	tag "PLOT_INTERACTIVE_BARPLOTS on $run using $task.cpus CPUs and $task.memory memory"
+	publishDir "${params.outDirectory}/${run}/run_background/", mode:'copy'
+	container 'quay.io/biocontainers/mulled-v2-3010b5d5c6c3f1a37d774a628ee4297193a99ff7:d9c1f7cd95774148d0b53def6f8afa0ed9e247c3-0'
+	label "s_cpu"
+	label "l_mem"
+	
+	input:
+	tuple val(run), path(readcounts)
+
+	output:
+	path "*"
+
+	
+	script:
+	"""
+	echo PLOT_INTERACTIVE_BARPLOTS $run
+	python $params.interactive_bar_plots --readcount $readcounts --name $run
+	"""
+}
+
 process PLOT_SAMPLE_BARPLOTS {
 	tag "PLOT_SAMPLE_BARPLOTS on $name using $task.cpus CPUs and $task.memory memory"
 	publishDir "${params.outDirectory}/${sample.run}/coverage/", mode:'copy'
@@ -444,7 +483,7 @@ process PLOT_SAMPLE_BARPLOTS {
 	tuple val(name), val(sample), path(vcf)
 
 	output:
-	path "${name}_barPlot.pdf"
+	path "*"
 
 	script:
 	"""

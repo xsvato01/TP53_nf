@@ -54,6 +54,8 @@ def main():
     variant_df = pd.DataFrame(
         list(all_variant_counts.items()), columns=['Variant', 'Count'])
 
+    variant_df.to_csv(args.name + "_counts.csv", index=False)
+
     plt.figure(figsize=(12, 6))
     sns.barplot(x='Variant', y='Count', data=variant_df, palette='muted', order=order)
     plt.title('Counts of Variant Types in ' + args.name)
