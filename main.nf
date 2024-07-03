@@ -35,7 +35,7 @@ vardicted	= VARDICT(sortedbam)
 mixVCFs = vardicted.join(varscannedSNV, by: [0,1]).join(varscannedINDEL, by: [0,1])
 normalized	= NORMALIZE_VARIANTS(mixVCFs)
 merged		= MERGE_VARIANTS(normalized)
-norm_merged	= NORMALIZE_MERGED_VARIANTS(merged)//.view()
+norm_merged	= NORMALIZE_MERGED_VARIANTS(merged)
 
 
 annotated	= ANNOTATE(norm_merged)
@@ -47,7 +47,6 @@ CREATE_FINAL_TABLE(runName_samplePath.groupTuple())
 // ///vcf bar plots
 norm_merged_whole = norm_merged.map{[it[1].run, it[2]]}
     .groupTuple().map{[it[0], [run:it[0]], it[1]]} //twice run name to be consistent with other samples
-norm_merged.mix(norm_merged_whole).view()
 PLOT_SAMPLE_BARPLOTS(norm_merged.mix(norm_merged_whole))
 
 //interactive bar plots
