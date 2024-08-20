@@ -4,11 +4,11 @@ library(data.table)
 library(outliers)
 
 args = commandArgs(trailingOnly=TRUE)
-# setwd('/Volumes/share/share/710000-CEITEC/713000-cmm/713003-pospisilova/base/TP53/src/project/xsvato01/TP53_nf/scripts/')
-# args = c()
+#setwd('/storage/TP53/data/TP53_20240802-reseq_1/tmp/')
+#args = c()
 
-# args[1] = '/Volumes/share/share/710000-CEITEC/713000-cmm/713003-pospisilova/base/TP53/src/project/xsvato01/TP53_nf/scripts/'
-# args[2] = "TEST"
+#args[1] = '/storage/TP53/data/TP53_20240802-reseq_1/tmp/'
+#args[2] = "TEST"
 annot_files = list.files(args[1], pattern = "*normVEP.txt")
 
 
@@ -129,17 +129,40 @@ annot_dt_list = lapply(annot_files, function(file){
     tmp_dt2[,outlier_p_value := .(grubbs.test(final_AF)$p.value), by = VEP_HGVSc]
     tmp_dt2[outlier_p_value < 0.05, max_value := .(max(final_AF)), by = VEP_HGVSc]
     
-    tmp_dt2[varscan.SBIAS < 0.1 | varscan.SBIAS > 10, background := "YES_strandbias"]
+    tmp_dt2[varscan.SBIAS < 0.2 | varscan.SBIAS > 5, background := "YES_strandbias"]
     
     tmp_dt2[,vyskyt := .(round(Occurence_in_samples/length(unique(Sample_name)), digits = 3))]
     
-    tmp_dt2[is.na(max_value), sd2 := round(2*sd(final_AF), digits = 3), by = VEP_HGVSc]
-    tmp_dt2[!is.na(max_value), sd2 := round(2*sd(final_AF[!final_AF %in% max_value[1]]), digits = 3), by = VEP_HGVSc]
+    tmp_dt2[is.na(max_value), sd275 := round(2.75*sd(final_AF), digits = 3), by = VEP_HGVSc]
+    tmp_dt2[!is.na(max_value), sd275 := round(2*sd(final_AF[!final_AF %in% max_value[1]]), digits = 3), by = VEP_HGVSc]
     
     tmp_dt2[is.na(max_value), vrmean := round(mean(final_AF), digits = 3), by = VEP_HGVSc]
     tmp_dt2[!is.na(max_value), vrmean := round(mean(final_AF[!final_AF %in% max_value[1]]), digits = 3), by = VEP_HGVSc]
     
-    tmp_dt2[vyskyt > 0.75 & final_AF < vrmean + sd2, background := "YES_sarka_rule"]
+    tmp_dt2[vyskyt > 0.75 & final_AF < vrmean + sd275, background := "YES_sarka_rule"]
+
+    # Extract rows with more than 1 ALT
+    matching_rows <- grepl(",", tmp_dt2$ALT)
+    tmp_dt2$background[matching_rows] <- "YES_sarka_rule"
+    
+    # Set variants detected only by vardict to NA (previously falsely marked as YES_strandbias)
+    tmp_dt2[set == "vardict", background := NA]
+    
+    
+    # Step 1: Identify rows where VEP_HGVSc contains "c.215C>G"
+    matching_rows <- grepl("c.215C>G", tmp_dt2$VEP_HGVSc)
+    
+    # Step 2: Add rows where VEP_HGVSc contains "c.108G>A"
+    matching_rows <- matching_rows | grepl("c.108G>A", tmp_dt2$VEP_HGVSc)
+    
+    # Step 3: Add rows where VEP_HGVSc contains "c.639A>G"
+    matching_rows <- matching_rows | grepl("c.639A>G", tmp_dt2$VEP_HGVSc)
+    
+    # Rename the "background" column values to "polymorfismus" for these rows
+    tmp_dt2$background[matching_rows] <- "polymorfismus"
+  
+    
+  
     
     ##########################################################################################################
     

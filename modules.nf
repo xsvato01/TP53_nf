@@ -299,8 +299,6 @@ process ANNOTATE {
 
 process NORMALIZE_VEP {
 	tag "NORMALIZE_VEP on $name using $task.cpus CPUs and $task.memory memory"
-publishDir "${params.outDirectory}/${sample.run}/NORMALIZE_VEP/", mode:'copy'
-
     label "s_cpu"
 	label "xs_mem"
 	
@@ -346,6 +344,7 @@ process CREATE_FINAL_TABLE {
     publishDir "${params.outDirectory}/${run}/annotate/", mode:'copy'
 	label "m_mem"
     label "s_cpu"
+	cache false
 	
 	input:
 	tuple val(run), path(all_annotated_normed)
@@ -454,7 +453,7 @@ process BAM_READCOUNT {
 process PLOT_INTERACTIVE_BARPLOTS {
 	tag "PLOT_INTERACTIVE_BARPLOTS on $run using $task.cpus CPUs and $task.memory memory"
 	publishDir "${params.outDirectory}/${run}/run_background/", mode:'copy'
-	container 'quay.io/biocontainers/mulled-v2-3010b5d5c6c3f1a37d774a628ee4297193a99ff7:d9c1f7cd95774148d0b53def6f8afa0ed9e247c3-0'
+	container 'quay.io/biocontainers/mulled-v2-c76454c21ede7e688a8038e957e550af42c541ea:c1e864fdda605f5a8ea230dc16203330da05e9c7-0'
 	label "s_cpu"
 	label "l_mem"
 	
